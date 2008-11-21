@@ -1,3 +1,9 @@
+=== 1.0.1 / 2008-11-21
+* lib/dynamicwind.rb (dynamicwind, __switch): before/after procs should be
+  called in a dynamic context of a corresponding dynamicwind.
+
+* test/test_dynamicwind.rb: add some tests.
+
 === 1.0.0 / 2008-11-20
 
 * 1 major enhancement

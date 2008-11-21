@@ -4,7 +4,7 @@ rescue LoadError
 end
 
 module DynamicWind
-  VERSION = '1.0.0'
+  VERSION = '1.0.1'
 
   Stack = Struct.new(:fst, :snd, :next)
 
@@ -18,8 +18,17 @@ module DynamicWind
   end
 
   def dynamicwind(before, thunk, after)
+    before_ = after_ = nil
+    if ctn_before = __callcc_orig {|c| before_ = c; false }
+      before.call
+      ctn_before.call
+    end
+    if ctn_after = __callcc_orig {|c| after_ = c; false }
+      after.call
+      ctn_after.call
+    end
     mark = __top
-    __switch(Stack[[before, nil], [nil, after], mark])
+    __switch(Stack[[before_, nil], [nil, after_], mark])
     thunk.call ensure __switch(mark)
   end
 
@@ -35,7 +44,7 @@ module DynamicWind
     return if __top.equal?(mark)
     __switch(mark.next)
     fst, snd = mark.fst, mark.snd
-    fst.first.call if fst.first
+    __callcc_orig {|c| fst.first.call(c) } if fst.first
     __top.fst = snd
     __top.snd = fst
     __top.next = mark
@@ -43,7 +52,7 @@ module DynamicWind
     __top.fst = nil
     __top.snd = nil
     __top.next = nil
-    fst.last.call if fst.last
+    __callcc_orig {|c| fst.last.call(c) } if fst.last
   end
 end
 
